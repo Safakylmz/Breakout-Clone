@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+using UnityEngine.SceneManagement;
 
 public class BallController : MonoBehaviour
 {
@@ -10,10 +12,22 @@ public class BallController : MonoBehaviour
     private bool isBallMoving;
 
     private Rigidbody2D rb;
+
+    private int score = 0;
+    private int lives = 3;
+    private int brickCount; //oyunu kazanma ekraný için
+
+
+    public TextMeshProUGUI scoreText;
+    public GameObject[] livesImage;
+    public GameObject gameOverPanel;
+    public GameObject youWinPanel;
+
     
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        brickCount = FindObjectOfType<LevelGenerator>().transform.childCount; // tuðla sayýsýný alýyor oyun baþýnda.
     }
 
     private void Update()
@@ -26,13 +40,30 @@ public class BallController : MonoBehaviour
         if (collision.gameObject.CompareTag("Brick"))
         {
             Destroy(collision.gameObject);
+            score += 10;
+            scoreText.text = "Score " + score.ToString("0000");
+            brickCount--;
+            if(brickCount <= 0)
+            {
+                youWinPanel.SetActive(true);
+                Time.timeScale = 0;
+            }
         }
 
         if (collision.gameObject.CompareTag("GameOver"))
         {
+            lives--;
+            livesImage[lives].SetActive(false);
             transform.position = Vector3.zero;
             rb.velocity = Vector3.zero;
             isBallMoving = false;
+
+            if (lives <= 0)
+            {
+                gameOverPanel.SetActive(true);
+                Time.timeScale = 0;
+                Destroy(gameObject);
+            }
         }
     }
     private void StartingForce()
@@ -45,6 +76,5 @@ public class BallController : MonoBehaviour
             isBallMoving = true;
             rb.AddForce(upForce * speed);
         }
-
     }
 }
